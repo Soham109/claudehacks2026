@@ -28,12 +28,8 @@ export async function findMatchesForUser(
 
   if (!user) throw new Error("User not found");
 
-  const dayOfWeek = new Date(preferredDate).toLocaleDateString("en-US", { weekday: "lowercase" as never });
-  const dayMap: Record<number, string> = {
-    0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
-    4: "thursday", 5: "friday", 6: "saturday",
-  };
-  const day = dayMap[new Date(preferredDate).getDay()] || "monday";
+  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const day = dayNames[new Date(preferredDate).getDay()] || "monday";
 
   const existingTable = await prisma.diningTable.findFirst({
     where: {
