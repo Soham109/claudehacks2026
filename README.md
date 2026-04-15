@@ -5,7 +5,6 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
   <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
   <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
-  <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" />
   <img src="https://img.shields.io/badge/Anthropic_Claude-D97757?style=for-the-badge&logo=anthropic&logoColor=white" />
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
   <img src="https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white" />
@@ -15,7 +14,7 @@
 <p align="center"><strong>Never eat alone at UW-Madison.</strong></p>
 <p align="center">
   AI-powered social dining — join a small table of 3–4 students around a shared vibe.<br/>
-  Built with Claude + OpenAI. Deployed on Vercel.
+  Built with Claude by Anthropic. Deployed on Vercel.
 </p>
 
 ---
@@ -32,7 +31,7 @@ No public profiles. No swiping. No followers. Just real meals with real people.
 |---------|-------------|
 | 🔐 **Auth** | Email + password signup/login via NextAuth.js |
 | 🎯 **Vibe Matching** | 12 vibes — "Quiet lunch", "Tech talk", "Bad day", "Surprise me", etc. |
-| 🤖 **AI Groups** | GPT-4o-mini forms balanced groups by interests, major, year, schedule, proximity |
+| 🤖 **AI Groups** | Claude forms balanced groups by interests, major, year, schedule, proximity |
 | 📍 **Smart Location** | Pin on map, GPS, address search (Nominatim), or pick your dorm. Finds optimal dining hall via Haversine distance. |
 | 📅 **Schedule-Aware** | Add your classes, auto-detect free time, only match when available |
 | 💬 **AI Icebreakers** | Custom conversation starters generated per table composition |
@@ -44,8 +43,7 @@ No public profiles. No swiping. No followers. Just real meals with real people.
 
 | Layer | Technology |
 |-------|-----------|
-| **AI (Code)** | [Claude](https://anthropic.com/claude) by Anthropic — used to architect and build the entire codebase |
-| **AI (Matching)** | [OpenAI GPT-4o-mini](https://openai.com) — powers group matching, icebreaker generation, and conversation starters |
+| **AI** | [Claude](https://anthropic.com/claude) by Anthropic — powers the entire app: codebase architecture, group matching, icebreaker generation, and conversation starters |
 | **Frontend** | [Next.js 15](https://nextjs.org) · [React 19](https://react.dev) · [Tailwind CSS](https://tailwindcss.com) · [Framer Motion](https://www.framer.com/motion/) · [Lucide React](https://lucide.dev) |
 | **Auth** | [NextAuth.js v4](https://next-auth.js.org) — credentials provider with bcrypt + JWT sessions |
 | **Database** | [PostgreSQL](https://www.postgresql.org) on [Neon](https://neon.tech) · [Prisma ORM](https://www.prisma.io) |
