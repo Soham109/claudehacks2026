@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  hashedPassword String
+  year           String   @default("")
+  major          String   @default("")
+  interests      String   @default("[]")
+  dietaryPrefs   String   @default("[]")
+  residenceHall  String   @default("")
+  lat            Float?
+  lng            Float?
+  bio            String   @default("")
+  isOnboarded    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  scheduleBlocks ScheduleBlock[]
+  tableMembers   TableMember[]
+  checkins       Checkin[]
+}
+
+model ScheduleBlock {
+  id        String  @id @default(cuid())
+  userId    String
+  day       String
+  startTime String
+  endTime   String
+  label     String  @default("Free")
+  isFree    Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DiningTable {
+  id         String   @id @default(cuid())
+  diningHall String
+  vibe       String
+  date       String
+  time       String
+  maxSize    Int      @default(4)
+  status     String   @default("forming")
+  icebreaker String?
+  aiPrompt   String?
+  tableSpot  String?
+  createdAt  DateTime @default(now())
+
+  members TableMember[]
+}
+
+model TableMember {
+  id       String   @id @default(cuid())
+  userId   String
+  tableId  String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  table DiningTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tableId])
+}
+
+model Checkin {
+  id          String   @id @default(cuid())
+  userId      String
+  diningHall  String
+  checkedInAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
