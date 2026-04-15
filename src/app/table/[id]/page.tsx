@@ -9,7 +9,8 @@ import MapView from "@/components/MapView";
 import VibeIcon from "@/components/VibeIcon";
 import { useProfile } from "@/lib/useProfile";
 import { DINING_HALLS, VIBES, haversineDistance, walkingTimeMinutes } from "@/lib/dining-halls";
-import { MessageCircle, MapPin, Armchair, ArrowRight, Footprints, Sparkles } from "lucide-react";
+import { MessageCircle, MapPin, Armchair, Footprints, Sparkles, LogOut } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface TableMember {
   id: string; role: string;
@@ -30,6 +31,7 @@ export default function TableDetailPage() {
   const [table, setTable] = useState<TableData | null>(null);
   const [loading, setLoading] = useState(true);
   const [revealed, setRevealed] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   const tableId = params.id as string;
 
@@ -200,9 +202,30 @@ export default function TableDetailPage() {
           </motion.div>
         )}
 
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex gap-2">
           <Link href="/find-table" className="btn-secondary flex-1 justify-center">Find Another Table</Link>
           <Link href="/dashboard" className="btn-ghost flex-1 justify-center">Dashboard</Link>
+          {table.members.some((m) => m.user.id === userId) && (
+            <button
+              disabled={leaving}
+              onClick={async () => {
+                setLeaving(true);
+                try {
+                  const res = await fetch("/api/tables/leave", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ tableId: table.id }),
+                  });
+                  if (!res.ok) throw new Error();
+                  toast.success("You left the table");
+                  router.push("/dashboard");
+                } catch { toast.error("Failed to leave"); setLeaving(false); }
+              }}
+              className="btn-ghost text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              {leaving ? "..." : "Leave"}
+            </button>
+          )}
         </div>
       </main>
     </div>

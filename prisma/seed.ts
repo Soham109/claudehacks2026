@@ -37,9 +37,35 @@ const USERS = [
 ];
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
-const CLASSES = ["CS 400", "CS 300", "CS 252", "MATH 234", "MATH 340", "ECON 101", "ECON 301", "BIO 152", "BIO 101", "PSYCH 202", "PSYCH 101", "ENG 100", "STAT 324", "CHEM 109", "CHEM 343", "PHYSICS 201", "PHYSICS 202", "COMM 100", "SOC 120", "HIST 201"];
+const CLASSES = ["CS 400", "CS 300", "CS 252", "MATH 234", "MATH 340", "ECON 101", "ECON 301", "BIO 152", "BIO 101", "PSYCH 202", "ENG 100", "STAT 324", "CHEM 109", "CHEM 343", "PHYSICS 201", "COMM 100", "SOC 120", "HIST 201"];
 const VIBES = ["quiet", "tech", "freshmen", "international", "bad-day", "study-break", "sports", "creative", "fitness", "music", "food", "random"];
 const HALLS = ["gordon", "rhetas", "four-lakes", "lizs", "carsons"];
+const TIMES = ["11:00", "11:30", "12:00", "12:30", "13:00", "17:00", "17:30", "18:00", "18:30", "19:00"];
+
+const ICEBREAKERS = [
+  "What's something you're adjusting to lately?",
+  "What's the most underrated spot on campus?",
+  "What's a project or idea you've been obsessing over?",
+  "What class has surprised you the most this semester?",
+  "If you could eat one meal for the rest of college, what would it be?",
+  "What's something small that made your day better recently?",
+  "What's your go-to study spot and why?",
+  "What's a skill you want to learn before you graduate?",
+  "What's one thing you wish you knew before coming to UW?",
+  "If you could take any class regardless of major, what would it be?",
+  "What's the best advice you've gotten in college so far?",
+  "What does your ideal weekend in Madison look like?",
+];
+
+const SPOTS = [
+  "Table near the window", "Corner booth by the plants", "Round table in the center",
+  "High-top near the entrance", "Quiet table in the back", "Table with the best natural light",
+  "Cozy spot near the coffee station", "Booth by the wall", "Table near the salad bar",
+];
+
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+function today() { return new Date().toISOString().split("T")[0]; }
+function tomorrow() { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split("T")[0]; }
 
 function randomSchedule() {
   const blocks: { day: string; startTime: string; endTime: string; label: string; isFree: boolean }[] = [];
@@ -50,16 +76,13 @@ function randomSchedule() {
       let h: number;
       do { h = Math.floor(Math.random() * 8) + 8; } while (used.has(h));
       used.add(h);
-      blocks.push({ day, startTime: `${h.toString().padStart(2, "0")}:00`, endTime: `${(h + 1).toString().padStart(2, "0")}:15`, label: CLASSES[Math.floor(Math.random() * CLASSES.length)], isFree: false });
+      blocks.push({ day, startTime: `${h.toString().padStart(2, "0")}:00`, endTime: `${(h + 1).toString().padStart(2, "0")}:15`, label: pick(CLASSES), isFree: false });
     }
-    blocks.push({ day, startTime: "11:00", endTime: "13:30", label: "Free", isFree: true });
-    blocks.push({ day, startTime: "17:00", endTime: "20:00", label: "Free", isFree: true });
+    blocks.push({ day, startTime: "11:00", endTime: "14:00", label: "Free", isFree: true });
+    blocks.push({ day, startTime: "17:00", endTime: "20:30", label: "Free", isFree: true });
   }
   return blocks;
 }
-
-function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
-function today() { return new Date().toISOString().split("T")[0]; }
 
 async function main() {
   console.log("Seeding database...\n");
@@ -71,7 +94,7 @@ async function main() {
   await prisma.user.deleteMany();
 
   const pw = await bcrypt.hash("password123", 12);
-  const createdUsers: { id: string; name: string }[] = [];
+  const created: { id: string; name: string }[] = [];
 
   for (const u of USERS) {
     const user = await prisma.user.create({
@@ -83,76 +106,74 @@ async function main() {
         bio: u.bio, isOnboarded: true,
       },
     });
-    const schedule = randomSchedule();
-    await prisma.scheduleBlock.createMany({ data: schedule.map((b) => ({ ...b, userId: user.id })) });
-    createdUsers.push({ id: user.id, name: user.name });
+    await prisma.scheduleBlock.createMany({ data: randomSchedule().map((b) => ({ ...b, userId: user.id })) });
+    created.push({ id: user.id, name: user.name });
     console.log(`  User: ${user.name}`);
   }
 
-  // Create tables
-  const times = ["11:30", "12:00", "12:30", "17:30", "18:00", "18:30"];
+  // Create tables for today — one for every vibe across different halls/times
   const d = today();
-  console.log("\n  Creating tables...");
+  const d2 = tomorrow();
+  console.log("\n  Creating tables for today and tomorrow...");
 
-  for (let i = 0; i < 8; i++) {
-    const vibe = pick(VIBES);
-    const time = pick(times);
-    const hall = pick(HALLS);
-    const shuffled = [...createdUsers].sort(() => Math.random() - 0.5);
-    const members = shuffled.slice(0, Math.floor(Math.random() * 3) + 2);
+  let tableCount = 0;
+  for (const vibe of VIBES) {
+    for (const date of [d, d2]) {
+      const time = pick(TIMES);
+      const hall = pick(HALLS);
+      const shuffled = [...created].sort(() => Math.random() - 0.5);
+      const count = Math.floor(Math.random() * 3) + 2;
+      const members = shuffled.slice(0, count);
 
-    const icebreakers = [
-      "What's something you're adjusting to lately?",
-      "What's the most underrated spot on campus?",
-      "What's a project or idea you've been obsessing over?",
-      "What class has surprised you the most this semester?",
-      "If you could eat one meal for the rest of college, what would it be?",
-      "What's something small that made your day better recently?",
-      "What's your go-to study spot and why?",
-      "What's a skill you want to learn before you graduate?",
-    ];
-    const spots = [
-      "Table near the window",
-      "Corner booth by the plants",
-      "Round table in the center",
-      "High-top near the entrance",
-      "Quiet table in the back",
-      "Table with the best natural light",
-      "Cozy spot near the coffee station",
-    ];
-
-    const table = await prisma.diningTable.create({
-      data: {
-        diningHall: hall, vibe, date: d, time,
-        maxSize: 4,
-        status: i < 4 ? "active" : "forming",
-        icebreaker: pick(icebreakers),
-        tableSpot: pick(spots),
-        aiPrompt: "Hey! I'm here for ConnecTable — mind if I join?",
-        members: {
-          create: members.map((m, j) => ({
-            userId: m.id,
-            role: j === 0 ? "creator" : "member",
-          })),
+      await prisma.diningTable.create({
+        data: {
+          diningHall: hall, vibe, date, time, maxSize: 4,
+          status: count >= 3 ? "active" : "forming",
+          icebreaker: pick(ICEBREAKERS), tableSpot: pick(SPOTS),
+          aiPrompt: "Hey! I'm here for ConnecTable — mind if I join?",
+          members: { create: members.map((m, j) => ({ userId: m.id, role: j === 0 ? "creator" : "member" })) },
         },
-      },
-    });
-    console.log(`  Table: ${hall} @ ${time} (${vibe}) — ${members.length} members [${table.status}]`);
+      });
+      tableCount++;
+    }
   }
 
-  // Create checkins
+  // Extra tables for popular vibes
+  for (const vibe of ["quiet", "tech", "food", "study-break", "random"]) {
+    for (const time of ["12:00", "12:30", "18:00", "18:30"]) {
+      const hall = pick(HALLS);
+      const shuffled = [...created].sort(() => Math.random() - 0.5);
+      const members = shuffled.slice(0, Math.floor(Math.random() * 2) + 2);
+      await prisma.diningTable.create({
+        data: {
+          diningHall: hall, vibe, date: d, time, maxSize: 4,
+          status: "forming",
+          icebreaker: pick(ICEBREAKERS), tableSpot: pick(SPOTS),
+          aiPrompt: "Hey! I'm here for ConnecTable — mind if I join?",
+          members: { create: members.map((m, j) => ({ userId: m.id, role: j === 0 ? "creator" : "member" })) },
+        },
+      });
+      tableCount++;
+    }
+  }
+  console.log(`  Created ${tableCount} tables`);
+
+  // Checkins — lots of them across all halls
   console.log("\n  Creating checkins...");
-  for (let i = 0; i < 12; i++) {
-    const user = pick(createdUsers);
-    const hall = pick(HALLS);
-    await prisma.checkin.create({
-      data: { userId: user.id, diningHall: hall },
-    });
-    console.log(`  Checkin: ${user.name} @ ${hall}`);
+  let checkinCount = 0;
+  for (const hall of HALLS) {
+    const shuffled = [...created].sort(() => Math.random() - 0.5);
+    const count = Math.floor(Math.random() * 4) + 2;
+    for (let i = 0; i < count; i++) {
+      await prisma.checkin.create({ data: { userId: shuffled[i].id, diningHall: hall } });
+      checkinCount++;
+    }
   }
+  console.log(`  Created ${checkinCount} checkins`);
 
-  console.log(`\n✓ Seeded ${USERS.length} users, 8 tables, 12 checkins`);
-  console.log(`  All passwords: password123`);
+  console.log(`\n✓ Seeded ${USERS.length} users, ${tableCount} tables, ${checkinCount} checkins`);
+  console.log(`  All user passwords: password123`);
+  console.log(`  Login as any user, e.g.: achen@wisc.edu / password123`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());
